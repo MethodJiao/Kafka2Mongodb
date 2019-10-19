@@ -1,22 +1,24 @@
-import org.bson.json.JsonParseException;
-import util.KafkaUtil;
-import util.MongoUtil;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.bson.Document;
+import org.bson.json.JsonParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import util.KafkaUtil;
+import util.MongoUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
 
 /**
  * @Author Method.Jiao
  * @Date 2019/10/19 13:16
  */
 public class Kafka2Mongodb implements Runnable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Kafka2Mongodb.class);
 
     public Kafka2Mongodb() {
     }
@@ -24,21 +26,26 @@ public class Kafka2Mongodb implements Runnable {
     /**
      * 数据入库MongoDB
      */
-    public void mongodbInsert(ConsumerRecords<String, String> consumerRecords) {
+    private void mongodbInsert(ConsumerRecords<String, String> consumerRecords) {
         //mongo db链接实例
         MongoDatabase mongoDatabase = MongoUtil.getConnect();
         //Mongodb database中 Collection名字
         MongoCollection<Document> mongoDatabaseCollection = mongoDatabase.getCollection("netflows");
         //入库数据集
-        List<Document> kafkaDataList = new ArrayList<>();
+        List<Document> kafkaDataList = new ArrayList<Document>();
         try {
             for (ConsumerRecord<String, String> record : consumerRecords) {
                 System.out.println("=======receive: key = " + record.key() + ", value = " + record.value() + " offset===" + record.offset());
+                LOGGER.info("JsonParse Error Receive check msg:[key:{},value:{}]", record.key(), record.value());
                 Document document = Document.parse(record.value());
                 kafkaDataList.add(document);
             }
         } catch (JsonParseException e) {
             e.printStackTrace();
+            LOGGER.error("JsonParse Error Receive check msg:[msg:{}]", e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("Error Receive msg:[msg:{}]", e.getMessage());
         }
         if (kafkaDataList.isEmpty()) {
             return;
@@ -64,6 +71,7 @@ public class Kafka2Mongodb implements Runnable {
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
+            LOGGER.error("InterruptedException Error msg:[msg:{}]", e.getMessage());
         } finally {
             kafkaConsumer.close();
         }

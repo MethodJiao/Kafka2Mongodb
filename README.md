@@ -7,5 +7,5 @@ private final String kafkaServer = "localhost:9092";
 ```
 2.代码中默认是以GroupId为 `groupA`消费Topic为 `flume1`的kafka消息。
 ```$xslt
-KafkaConsumerTest test1 = new KafkaConsumerTest("flume1", "groupA");
+Kafka2Mongodb test1 = new Kafka2Mongodb("flume1", "groupA");
 ```

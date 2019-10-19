@@ -1,5 +1,6 @@
-import Util.KafkaUtil;
-import Util.MongoDBUtil;
+import org.bson.json.JsonParseException;
+import util.KafkaUtil;
+import util.MongoUtil;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -9,6 +10,7 @@ import org.bson.Document;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * @Author Method.Jiao
@@ -18,23 +20,31 @@ public class Kafka2Mongodb implements Runnable {
 
     public Kafka2Mongodb() {
     }
-    //数据入库MongoDB
-    public void MongodbInsert(ConsumerRecords<String, String> consumerRecords) {
+
+    /**
+     * 数据入库MongoDB
+     */
+    public void mongodbInsert(ConsumerRecords<String, String> consumerRecords) {
         //mongo db链接实例
-        MongoDatabase mongoDatabase = MongoDBUtil.getConnect();
+        MongoDatabase mongoDatabase = MongoUtil.getConnect();
         //Mongodb database中 Collection名字
-        MongoCollection<Document> mongoDBCollection = mongoDatabase.getCollection("netflows");
+        MongoCollection<Document> mongoDatabaseCollection = mongoDatabase.getCollection("netflows");
         //入库数据集
         List<Document> kafkaDataList = new ArrayList<>();
-        for (ConsumerRecord<String, String> record : consumerRecords) {
-            System.out.println("=======receive: key = " + record.key() + ", value = " + record.value() + " offset===" + record.offset());
-            Document document = new Document("key", record.key())
-                    .append("value", record.value());
-            kafkaDataList.add(document);
+        try {
+            for (ConsumerRecord<String, String> record : consumerRecords) {
+                System.out.println("=======receive: key = " + record.key() + ", value = " + record.value() + " offset===" + record.offset());
+                Document document = Document.parse(record.value());
+                kafkaDataList.add(document);
+            }
+        } catch (JsonParseException e) {
+            e.printStackTrace();
         }
-        if (kafkaDataList.isEmpty())
+        if (kafkaDataList.isEmpty()) {
             return;
-        mongoDBCollection.insertMany(kafkaDataList);//入库
+        }
+        //入库
+        mongoDatabaseCollection.insertMany(kafkaDataList);
     }
 
     @Override
@@ -44,9 +54,10 @@ public class Kafka2Mongodb implements Runnable {
         System.out.println("---------开始消费---------");
         try {
             for (; ; ) {
-                ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(1000);//用1s时长拉取数据
+                //用1s时长拉取数据
+                ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(1000);
                 if (null != consumerRecords && consumerRecords.count() > 0) {
-                    MongodbInsert(consumerRecords);
+                    mongodbInsert(consumerRecords);
                     continue;
                 }
                 Thread.sleep(1000);
@@ -59,8 +70,9 @@ public class Kafka2Mongodb implements Runnable {
     }
 
     public static void main(String[] args) {
-        Kafka2Mongodb test1 = new Kafka2Mongodb();
-        Thread thread1 = new Thread(test1);
+        //后台线程方式运行
+        Kafka2Mongodb kafka2MongodbTask = new Kafka2Mongodb();
+        Thread thread1 = new Thread(kafka2MongodbTask);
         thread1.start();
     }
 }

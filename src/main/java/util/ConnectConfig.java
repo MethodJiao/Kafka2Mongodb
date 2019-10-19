@@ -1,4 +1,4 @@
-package Util;
+package util;
 
 /**配置类
  * @Author Method.Jiao

@@ -36,7 +36,7 @@ public class Kafka2Mongodb implements Runnable {
         try {
             for (ConsumerRecord<String, String> record : consumerRecords) {
                 System.out.println("=======receive: key = " + record.key() + ", value = " + record.value() + " offset===" + record.offset());
-                LOGGER.info("JsonParse Error Receive check msg:[key:{},value:{}]", record.key(), record.value());
+                LOGGER.info("msg:[key:{},value:{}]", record.key(), record.value());
                 Document document = Document.parse(record.value());
                 kafkaDataList.add(document);
             }

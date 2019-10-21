@@ -50,8 +50,13 @@ public class Kafka2Mongodb implements Runnable {
         if (kafkaDataList.isEmpty()) {
             return;
         }
-        //入库
-        mongoDatabaseCollection.insertMany(kafkaDataList);
+        try {
+            //入库
+            mongoDatabaseCollection.insertMany(kafkaDataList);
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("MongoDB Error [msg:{}]", e.getMessage());
+        }
     }
 
     @Override

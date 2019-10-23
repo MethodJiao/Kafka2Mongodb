@@ -21,9 +21,9 @@ public class ConnectConfig {
         return mongodbPort;
     }
 
-    private String kafkaIp = "192.168.50.201";
+    private String kafkaIp = "10.100.140.35";
     private String kafkaPort = "9092";
-    private String mongodbIp = "192.168.50.201";
+    private String mongodbIp = "10.100.140.35";
     private String mongodbPort = "27017";
 
 }

@@ -3,7 +3,7 @@ package util;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Properties;
 
 /**
@@ -23,8 +23,8 @@ public class KafkaUtil {
         props.put("auto.offset.reset", "earliest");
         props.put("key.deserializer", StringDeserializer.class.getName());
         props.put("value.deserializer", StringDeserializer.class.getName());
-        KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<String, String>(props);
-        kafkaConsumer.subscribe(Arrays.asList("flume1"));
+        KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<>(props);
+        kafkaConsumer.subscribe(Collections.singletonList("flume1"));
 
         return kafkaConsumer;
     }

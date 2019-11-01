@@ -4,26 +4,21 @@ package util;
  * @Author Method.Jiao
  * @Date 2019/10/19 13:16
  */
-public class ConnectConfig {
+class ConnectConfig {
     public String getKafkaIp() {
-        return kafkaIp;
+        return "localhost";
     }
 
     public String getKafkaPort() {
-        return kafkaPort;
+        return "9092";
     }
 
     public String getMongodbIp() {
-        return mongodbIp;
+        return "localhost";
     }
 
     public String getMongodbPort() {
-        return mongodbPort;
+        return "27017";
     }
-
-    private String kafkaIp = "localhost";
-    private String kafkaPort = "9092";
-    private String mongodbIp = "localhost";
-    private String mongodbPort = "27017";
 
 }

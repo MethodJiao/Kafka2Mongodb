@@ -44,6 +44,6 @@ mongodb消费kafka消息  实现kafka消息同步入库mongodb
 ## 6.本工程集成slf4j+log4j
 如需更改请修改 log4j.properties内配置，log文件默认输出到运行路径下log文件夹内kafka2mongoDebug.log记录debug级别以上日志，kafka2mongoError.log记录error级别以上日志
 ## 7.本工程已json方式生产kafka即可，下边是在生产者输入的内容，可以作为测试用
-```aidl
+```
 {"employees":[{"firstName":"Bill","lastName":"Gates"},{"firstName":"George","lastName":"Bush"},{"firstName":"Thomas","lastName":"Carter"}]}
 ```

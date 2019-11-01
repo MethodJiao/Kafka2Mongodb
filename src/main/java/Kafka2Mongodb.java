@@ -17,10 +17,10 @@ import java.util.List;
  * @Author Method.Jiao
  * @Date 2019/10/19 13:16
  */
-public class Kafka2Mongodb implements Runnable {
+class Kafka2Mongodb implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(Kafka2Mongodb.class);
 
-    public Kafka2Mongodb() {
+    private Kafka2Mongodb() {
     }
 
     /**
@@ -32,7 +32,7 @@ public class Kafka2Mongodb implements Runnable {
         //Mongodb database中 Collection名字
         MongoCollection<Document> mongoDatabaseCollection = mongoDatabase.getCollection("netflows");
         //入库数据集
-        List<Document> kafkaDataList = new ArrayList<Document>();
+        List<Document> kafkaDataList = new ArrayList<>();
         try {
             for (ConsumerRecord<String, String> record : consumerRecords) {
                 System.out.println("=======receive: key = " + record.key() + ", value = " + record.value() + " offset===" + record.offset());
@@ -59,12 +59,11 @@ public class Kafka2Mongodb implements Runnable {
         }
     }
 
+    @SuppressWarnings("InfiniteLoopStatement")
     @Override
     public void run() {
-        KafkaConsumer<String, String> kafkaConsumer = KafkaUtil.getConnect();
-
-        System.out.println("---------开始消费---------");
-        try {
+        try (KafkaConsumer<String, String> kafkaConsumer = KafkaUtil.getConnect()) {
+            System.out.println("---------开始消费---------");
             for (; ; ) {
                 //用1s时长拉取数据
                 ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(1000);
@@ -77,8 +76,6 @@ public class Kafka2Mongodb implements Runnable {
         } catch (InterruptedException e) {
             e.printStackTrace();
             LOGGER.error("InterruptedException Error msg:[msg:{}]", e.getMessage());
-        } finally {
-            kafkaConsumer.close();
         }
     }
 

@@ -1,12 +1,13 @@
 package util;
 
-import com.mongodb.MongoClient;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 
 /**
  * @Author Method.Jiao
@@ -19,29 +20,31 @@ public class MongoUtil {
     public static MongoDatabase getConnect() {
         ConnectConfig connectConfig = new ConnectConfig();
         //连接到 mongodb 服务
-        MongoClient mongoClient = new MongoClient
-                (connectConfig.getMongodbIp(), Integer.parseInt(connectConfig.getMongodbPort()));
-
+        MongoClient mongoClient = MongoClients.create("mongodb://" + connectConfig.getMongodbIp() + ":" + connectConfig.getMongodbPort());
         //返回连接数据库对象
         return mongoClient.getDatabase("mydb");
     }
+
     /**
      * 需要密码认证方式连接
      */
     public static MongoDatabase getConnect2() {
-        List<ServerAddress> adds = new ArrayList<ServerAddress>();
-        //ServerAddress()两个参数分别为 服务器地址 和 端口
-        ServerAddress serverAddress = new ServerAddress("localhost", 27017);
-        adds.add(serverAddress);
-
-        List<MongoCredential> credentials = new ArrayList<MongoCredential>();
-        //MongoCredential.createScramSha1Credential()三个参数分别为 用户名 数据库名称 密码
-        MongoCredential mongoCredential = MongoCredential.createScramSha1Credential("username", "databaseName", "password".toCharArray());
-        credentials.add(mongoCredential);
 
         //通过连接认证获取MongoDB连接
-        MongoClient mongoClient = new MongoClient(adds, credentials);
+        String user = "";
+        String database = "";
+        char[] password = {'p', 'a', 's', 's'};
 
+        MongoCredential credential = MongoCredential.createCredential(user, database, password);
+
+        MongoClientSettings settings = MongoClientSettings.builder()
+                .credential(credential)
+                .applyToSslSettings(builder -> builder.enabled(true))
+                .applyToClusterSettings(builder ->
+                        builder.hosts(Collections.singletonList(new ServerAddress("host1", 27017))))
+                .build();
+
+        MongoClient mongoClient = MongoClients.create(settings);
         //返回连接数据库对象
         return mongoClient.getDatabase("mydb");
     }
